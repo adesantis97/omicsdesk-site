@@ -1,0 +1,106 @@
+---
+title: "Salmon vs featureCounts: why your gene counts differ and which to trust"
+description: "Salmon and featureCounts both produce RNA-seq gene counts, but they make fundamentally different decisions about multi-mapping reads, transcript length, and GC bias. Here is what changes when you switch quantifiers and how to choose between them."
+pubDate: 2026-09-11
+author: "Alessandro De Santis"
+tags: ["RNA-seq", "quantification", "Salmon", "featureCounts", "bioinformatics-methods"]
+heroImage: "/blog/salmon_vs_featurecounts/hero.png"
+heroAlt: "Scatter of Salmon estimated counts against featureCounts raw counts, one point per gene. Most genes lie on the diagonal; the 300 multi mapping loci sit systematically below it."
+heroCaption: "Most genes agree between the two quantifiers. The systematic outliers are loci with ambiguous reads, which featureCounts discards and Salmon distributes via EM."
+draft: true
+---
+
+You ran your RNA-seq analysis with featureCounts. A colleague ran the same dataset with Salmon. The correlation between your count matrices is 0.97. That sounds high. But for the 400 genes that differ by more than twofold between the two tools, the biology you pull out of a differential expression analysis may be completely different.
+
+Salmon and featureCounts are both counting the same reads from the same experiment. They make fundamentally different decisions about what to do with reads that could have come from more than one place, and those decisions have systematic consequences.
+
+## Two tools, one genome, different numbers
+
+featureCounts takes a BAM file as input. It looks at where each aligned read lands and assigns it to a gene if the overlap with an annotated exon meets a threshold. A read that aligns equally well to two or more genomic loci is flagged as a multi-mapper. By default, featureCounts discards it. The read does not contribute to any gene's count.
+
+Salmon does not use a BAM file at all. It reads the raw FASTQ directly, maps each read probabilistically to a reference transcriptome using quasi-mapping, and then runs an expectation-maximisation algorithm to distribute ambiguous reads across their candidate transcripts in proportion to their estimated abundances. A multi-mapping read is not discarded; it is fractionally assigned based on the EM solution.
+
+The consequence: on a typical human RNA-seq experiment, roughly 5 to 15 per cent of reads are multi-mappers. featureCounts loses them entirely. Salmon distributes them. For most genes the difference is small. For paralogous gene families, ribosomal proteins, immunoglobulins, and olfactory receptors, it can be 30 to 50 per cent of the total count.
+
+## How featureCounts assigns reads (and what it discards)
+
+featureCounts is part of the Subread package and works entirely at the alignment level. After STAR or HISAT2 produces a BAM, featureCounts reads each alignment and applies the following logic:
+
+1. The read must overlap an annotated feature (exon, gene body, or whatever you specify).
+2. If the overlap is ambiguous (multiple genes overlap the same position), the read is flagged Unassigned_Ambiguity and discarded by default.
+3. If the read maps to multiple genomic loci (multi-mapper), it is flagged Unassigned_MultiMapping and discarded by default.
+4. If the read maps to no annotated feature, it is flagged Unassigned_NoFeatures.
+
+The output summary file documents every fate. Unassigned_MultiMapping is the row to watch: on a library with high paralogous gene content, this number can exceed 20 per cent. Those reads are gone from your count matrix.
+
+You can recover multi-mappers in featureCounts with the -M flag, which lets multi-mapping reads contribute a fractional count (1 divided by the number of valid alignments) to each candidate gene. This is a reasonable option, but it is different from what Salmon does because featureCounts still uses the alignment posterior, not an abundance-aware EM.
+
+## How Salmon quantifies without discarding multi-mappers
+
+Salmon operates on the transcriptome rather than the genome. The reference is a FASTA file of transcript sequences; no annotation BED or GTF is needed for the quasi-mapping step.
+
+For each read, Salmon finds all transcripts that are compatible with the observed sequence using a k-mer index. It then runs the Variational Bayes EM algorithm to find transcript abundance estimates that best explain the observed read assignments. Multi-mapping reads receive fractional counts proportional to transcript abundance: if transcript A accounts for 70 per cent of the probability mass for a given read and transcript B accounts for 30 per cent, the read contributes 0.7 to A and 0.3 to B.
+
+Salmon also corrects for two systematic biases that featureCounts ignores by default:
+
+Position bias: reads near the 3-prime end of a transcript are more likely to be observed in a typical library. Salmon estimates a positional weight function from the data and adjusts for it.
+
+GC bias: transcripts with extreme GC content are underrepresented in most library preparations. Salmon models the fragment GC content distribution and applies a per-transcript correction.
+
+The result is that Salmon estimated counts are closer to the true expression level for GC-extreme and isoform-rich genes, at the cost of being a probabilistic estimate rather than a deterministic integer count.
+
+## When the two methods agree and when they disagree
+
+For single-copy genes with a single dominant isoform and a GC content near 50 per cent, Salmon and featureCounts give nearly identical numbers. The correlation between the two is typically above 0.98 across the whole genome.
+
+The divergence is concentrated in four categories:
+
+Paralogous gene families: the ribosomal protein genes (RPL, RPS), immunoglobulin segments, olfactory receptor genes, and HOX clusters all have members with near-identical sequences. featureCounts discards most reads from these genes as multi-mappers. Salmon distributes them.
+
+Isoform-rich loci: a gene with five isoforms of very different lengths presents a length-normalization challenge. featureCounts counts reads per gene without adjusting for length differences between isoforms. Salmon operates at the isoform level and then sums to gene level using estimated isoform proportions.
+
+Short genes: genes with fewer than 200 bp of coding sequence have very few uniquely mappable positions. Their featureCounts values are driven almost entirely by reads that happen to map uniquely; Salmon uses the broader transcriptome context to improve the estimate.
+
+GC-biased genes: transcripts above 70 per cent or below 30 per cent GC content are systematically underrepresented in featureCounts relative to Salmon with GC bias correction enabled.
+
+The practical consequence: if your experiment involves any of these gene categories, the choice of quantifier will affect your differential expression results. Switching quantifiers mid-project, or comparing counts between datasets that used different tools, produces spurious DE results for genes in these categories.
+
+## Which to choose for your experiment
+
+Use Salmon (or kallisto, which uses a similar quasi-mapping approach) when:
+
+You have a well-annotated transcriptome for your organism. Salmon's EM depends on transcript sequences being accurate; a poorly assembled transcriptome degrades the EM solution.
+
+You are working with organisms that have high paralog content. Human, mouse, and zebrafish all have extensive paralogous families where the Salmon EM adds meaningful signal.
+
+You want isoform-level quantification. featureCounts collapses to gene level; Salmon gives you per-isoform TPM estimates that you can summarise to gene level with tximeta or tximport.
+
+You are running a bias-sensitive analysis such as allele-specific expression or quantifying lowly expressed transcription factors.
+
+Use featureCounts when:
+
+You are integrating RNA-seq with ChIP-seq or ATAC-seq data in a pipeline that is already alignment-based. A shared BAM file is a natural integration point.
+
+Your organism has a high-quality genome annotation but a fragmented or incomplete transcriptome assembly. featureCounts uses only the genome annotation GTF; it does not require transcript sequences.
+
+You need strictly reproducible integer counts with no probabilistic component, for example in an audit context or when an integer input is required by a downstream tool.
+
+You are replicating an existing analysis that used featureCounts. Changing the quantifier will introduce systematic differences that confound the replication.
+
+## The practical decision for DESeq2 and edgeR
+
+Both DESeq2 and edgeR expect raw, un-normalised count matrices. featureCounts produces integer counts directly. Salmon produces TPM values and estimated counts; the estimated counts are non-integer because of the fractional EM assignments.
+
+For DESeq2 you should import Salmon output with tximeta or tximport rather than rounding the estimated counts. These packages propagate the transcript-level uncertainty into the gene-level summary and handle the length and offset corrections that make the estimated counts compatible with DESeq2's negative binomial model. Rounding Salmon output to integers and feeding it directly to DESeq2 discards the bias correction and can inflate variance estimates for isoform-rich genes.
+
+For edgeR the same logic applies: use tximeta/tximport for Salmon, and the standard edgeR count input for featureCounts.
+
+The OmicsDesk RNA-seq pipeline runs both quantifiers by default on new projects and reports the concordance statistics in the QC section. If the multi-mapper rate in featureCounts is above 12 per cent, or if the gene-level correlation between tools is below 0.96, the report flags the discrepancy and includes the Salmon-based results as the primary deliverable.
+
+If you are switching an ongoing project from featureCounts to Salmon, do not mix old and new samples in the same DESeq2 model. Re-quantify the full cohort with one tool, then run the DE analysis on the unified matrix.
+
+DM me if you are mid-project and unsure whether your counts are comparable across methods. Happy to take a look.
+
+---
+
+_Figure: 5,000 simulated genes, 4 samples, the two quantifiers drawn independently from the same underlying expression. The discard rate is not invented: it is calibrated to a real featureCounts run where ambiguous reads are 9.8 to 17.2 per cent of the feature overlapping total. Pearson r is 0.977 overall, and the 300 multi mapping loci sit a median 32 per cent low._
