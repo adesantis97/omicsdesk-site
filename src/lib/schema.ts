@@ -22,8 +22,8 @@ export const organization = {
   logo: {
     '@type': 'ImageObject',
     url: `${SITE}/logo.png`,
-    width: 821,
-    height: 160,
+    width: 1129,
+    height: 300,
   },
   sameAs: ['https://www.linkedin.com/company/omicsdesk'],
   founder: { '@id': PERSON_ID },
