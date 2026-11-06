@@ -4,6 +4,7 @@ import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
 import CookieConsent from '../components/CookieConsent.astro';
 import JsonLd from '../components/JsonLd.astro';
+import BioBackdrop from '../components/BioBackdrop.astro';
 
 interface Props {
   title?: string;
@@ -12,6 +13,8 @@ interface Props {
   noIndex?: boolean;
   /** schema.org JSON-LD for this page: one object or several. */
   jsonLd?: Record<string, unknown> | Record<string, unknown>[];
+  /** Animated code + DNA backdrop: 'full' on the home page. */
+  backdrop?: 'full' | 'subtle';
 }
 
 const {
@@ -20,6 +23,7 @@ const {
   ogImage = '/og_image.png',
   noIndex = false,
   jsonLd,
+  backdrop = 'subtle',
 } = Astro.props;
 
 const canonical = new URL(Astro.url.pathname, Astro.site).toString();
@@ -29,6 +33,8 @@ const canonical = new URL(Astro.url.pathname, Astro.site).toString();
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#05080c" />
+  <meta name="color-scheme" content="dark" />
   <title>{title}</title>
   <meta name="description" content={description} />
   <link rel="canonical" href={canonical} />
@@ -63,10 +69,14 @@ const canonical = new URL(Astro.url.pathname, Astro.site).toString();
 
   {jsonLd && <JsonLd schema={jsonLd} />}
 </head>
-<body class="font-sans text-ink bg-paper antialiased">
+<body class="font-sans text-ink antialiased">
+  <BioBackdrop intensity={backdrop} />
   <Nav />
   <slot />
   <Footer />
   <CookieConsent />
+  <script>
+    import '../scripts/motion.ts';
+  </script>
 </body>
 </html>

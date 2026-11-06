@@ -6,6 +6,8 @@
 
 html {
   scroll-behavior: smooth;
+  color-scheme: dark;
+  background: #05080c;
 }
 
 body {
@@ -22,8 +24,8 @@ body::before {
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(60% 100% at 78% -8%, rgba(13, 148, 136, 0.14), transparent 60%),
-    radial-gradient(52% 90% at 8% -12%, rgba(15, 118, 110, 0.10), transparent 62%);
+    radial-gradient(60% 100% at 78% -8%, rgba(45, 212, 191, 0.10), transparent 60%),
+    radial-gradient(52% 90% at 8% -12%, rgba(15, 118, 110, 0.12), transparent 62%);
 }
 
 /* Respect the OS "reduce motion" setting: every hover lift, scale and
@@ -36,6 +38,24 @@ body::before {
     transition-duration: 0.01ms !important;
     transform: none !important;
   }
+}
+
+/* Scroll-scrubbed statement: words start dim and light up (motion.ts). */
+.scrub-word { opacity: 0.16; }
+.reduce-motion .scrub-word { opacity: 1; }
+
+/* Hairline grid that sits over the backdrop on the home hero. */
+.hero-vignette {
+  background:
+    radial-gradient(70% 60% at 30% 50%, rgba(5, 8, 12, 0.85), transparent 75%),
+    linear-gradient(180deg, transparent 70%, #05080c 100%);
+}
+
+.text-gradient {
+  background: linear-gradient(100deg, #5eead4 0%, #7dd3fc 55%, #a78bfa 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 @layer components {
@@ -86,7 +106,7 @@ body::before {
 
   /* White panel that lifts off the warm page. */
   .card {
-    @apply bg-white rounded-card border border-slate-200/80 shadow-card transition duration-250 ease-apple;
+    @apply bg-surface rounded-card border border-slate-200/80 shadow-card transition duration-250 ease-apple;
   }
   .card-link {
     @apply card hover:shadow-card-hover hover:border-accent/40 hover:-translate-y-0.5;
@@ -96,16 +116,16 @@ body::before {
      actually something behind to blur. On the flat paper ground a blur costs
      GPU and shows nothing, so plain .card is used there. */
   .card-glass {
-    @apply rounded-card border border-white/60 bg-white/70 backdrop-blur-xl shadow-card transition duration-250 ease-apple;
+    @apply rounded-card border border-white/[0.08] bg-surface/60 backdrop-blur-xl shadow-card transition duration-250 ease-apple;
   }
   .card-glass-invert {
-    @apply rounded-card border border-white/15 bg-white/[0.08] backdrop-blur-xl transition duration-250 ease-apple hover:bg-white/[0.14];
+    @apply rounded-card border border-white/15 bg-white/[0.06] backdrop-blur-xl transition duration-250 ease-apple hover:bg-white/[0.10];
   }
 
   /* Light teal-tinted section band */
   .section-tint {
     @apply relative border-y border-tint-2/70;
-    background: linear-gradient(180deg, #f4faf8 0%, #eaf3f0 100%);
+    background: linear-gradient(180deg, rgba(7,21,18,0.55) 0%, rgba(10,30,26,0.75) 100%);
   }
 
   /* Deep teal → ink full-bleed feature band */
@@ -113,7 +133,7 @@ body::before {
     @apply relative text-white;
     background:
       radial-gradient(80% 120% at 85% 0%, rgba(20, 184, 166, 0.35), transparent 55%),
-      linear-gradient(155deg, #0f766e 0%, #115e59 42%, #0f172a 100%);
+      linear-gradient(155deg, #0b3f3a 0%, #082a27 45%, #05080c 100%);
   }
 
   /* ── Controls ────────────────────────────────────────────────────── */
@@ -125,10 +145,10 @@ body::before {
            font-medium text-body-sm transition duration-250 ease-apple hover:scale-[1.02];
   }
   .btn-primary {
-    @apply btn bg-ink text-white shadow-card hover:bg-slate-800;
+    @apply btn bg-ink text-paper shadow-card hover:bg-slate-800;
   }
   .btn-secondary {
-    @apply btn bg-white text-ink border border-slate-200 shadow-card hover:bg-slate-50;
+    @apply btn bg-surface text-ink border border-slate-200 shadow-card hover:bg-slate-50;
   }
   .btn-outline {
     @apply btn bg-transparent text-ink border border-slate-300 hover:bg-slate-100;
@@ -155,7 +175,7 @@ body::before {
 
   /* Pill chip / tag */
   .chip {
-    @apply inline-flex items-center rounded-pill border border-slate-200 bg-white/70 px-3 py-1 text-caption font-medium text-slate-600;
+    @apply inline-flex items-center rounded-pill border border-slate-200 bg-surface/70 px-3 py-1 text-caption font-medium text-slate-600;
   }
 
   /* ── Progressive disclosure ──────────────────────────────────────── */
