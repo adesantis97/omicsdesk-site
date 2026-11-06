@@ -17,6 +17,18 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+// ── Spotlight cards ───────────────────────────────────────────────────────
+// The light follows the pointer 1:1 (no easing on the position, so it never
+// lags the hand); only its fade in and out is eased, in CSS. Not motion,
+// so it stays on under reduced motion too.
+document.addEventListener('pointermove', (e) => {
+  const card = (e.target as Element | null)?.closest?.('.glow-card') as HTMLElement | null;
+  if (!card) return;
+  const r = card.getBoundingClientRect();
+  card.style.setProperty('--mx', `${e.clientX - r.left}px`);
+  card.style.setProperty('--my', `${e.clientY - r.top}px`);
+}, { passive: true });
+
 if (!reduce) {
   gsap.registerPlugin(ScrollTrigger);
 
@@ -66,7 +78,13 @@ if (!reduce) {
       const track = wrap.querySelector<HTMLElement>('[data-hscroll-track]');
       const bar = wrap.querySelector<HTMLElement>('[data-hscroll-bar]');
       if (!track) return;
-      const dist = () => track.scrollWidth - wrap.clientWidth + 40;
+      // The track starts at the content column, not at the screen edge, so
+      // the distance is measured from where it really sits: the last card
+      // must end fully on screen, with the same gutter as the first.
+      const dist = () => {
+        const left = track.getBoundingClientRect().left - (gsap.getProperty(track, 'x') as number);
+        return Math.max(0, left + track.scrollWidth - window.innerWidth + left);
+      };
       gsap.timeline({
         scrollTrigger: {
           trigger: wrap, start: 'top top', end: () => `+=${dist()}`,

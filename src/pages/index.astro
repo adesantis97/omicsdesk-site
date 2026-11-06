@@ -109,10 +109,10 @@ const deliverables = [
     <div class="mt-block max-w-5xl w-full mx-auto px-5">
       <ol data-hscroll-track class="grid gap-4 sm:grid-cols-2 lg:flex lg:gap-6 lg:w-max">
         {method.map((m) => (
-          <li class={`lg:w-[380px] shrink-0 rounded-panel border p-8 backdrop-blur-xl transition duration-250 ease-apple ${m.accent ? 'border-accent/40 bg-accent/[0.08]' : 'border-white/[0.08] bg-surface/70'}`}>
-            <span class="font-mono text-caption text-accent">0{m.n}</span>
+          <li class={`glow-card lg:w-[380px] shrink-0 rounded-panel border p-8 backdrop-blur-xl ${m.accent ? 'border-accent/60 bg-gradient-to-br from-accent/25 via-teal-900/40 to-sky-900/30' : 'border-white/[0.08] bg-surface/70'}`}>
+            <span class={`glow-num font-mono text-caption ${m.accent ? 'text-teal-200' : 'text-accent'}`}>0{m.n}</span>
             <h3 class="text-title-2 mt-block">{m.title}</h3>
-            <p class="prose-p mt-stack">{m.body}</p>
+            <p class={`mt-stack text-body ${m.accent ? 'text-white/90' : 'text-slate-700'}`}>{m.body}</p>
           </li>
         ))}
       </ol>
@@ -132,7 +132,7 @@ const deliverables = [
 
     <div data-reveal-stagger class="mt-block grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
       {analyses.map((a) => (
-        <div class={`p-6 hover:-translate-y-0.5 hover:shadow-card-hover ${a.accent ? 'rounded-card border border-accent/40 bg-accent/[0.08] backdrop-blur-xl shadow-card transition duration-250 ease-apple' : 'card-glass'}`}>
+        <div class={`glow-card p-6 rounded-card border backdrop-blur-xl shadow-card ${a.accent ? 'border-accent/50 bg-accent/[0.12]' : 'border-white/[0.08] bg-surface/60'}`}>
           <h3 class="card-title">{a.title}</h3>
           <p class="prose-p-sm mt-2">{a.body}</p>
         </div>
@@ -167,17 +167,17 @@ const deliverables = [
     <p class="eyebrow">Timeline</p>
     <h2 data-reveal class="mt-stack text-title-1 sm:text-display-sm">How it works</h2>
     <div data-reveal-stagger class="mt-block grid md:grid-cols-3 gap-6">
-      <div class="card-glass p-6 border-t-2 border-t-accent">
+      <div class="glow-card rounded-card border border-white/[0.08] bg-surface/60 backdrop-blur-xl p-6 border-t-2 border-t-accent">
         <p class="font-mono text-caption text-accent">day 0</p>
         <h3 class="text-title-3 mt-2">Intake &amp; NDA</h3>
         <p class="prose-p-sm mt-stack">You fill a short intake form (organism, sample count, contrasts, data access). NDA signed before any data is shared. Quote and proposal back within 2 business days.</p>
       </div>
-      <div class="card-glass p-6 border-t-2 border-t-accent">
+      <div class="glow-card rounded-card border border-white/[0.08] bg-surface/60 backdrop-blur-xl p-6 border-t-2 border-t-accent">
         <p class="font-mono text-caption text-accent">days 1–7</p>
         <h3 class="text-title-3 mt-2">Analysis &amp; QC</h3>
         <p class="prose-p-sm mt-stack">Your data is analysed and, more importantly, studied. After QC you get a check in: if the design has a problem, we surface it before downstream stats burn the clock.</p>
       </div>
-      <div class="card-glass p-6 border-t-2 border-t-accent">
+      <div class="glow-card rounded-card border border-white/[0.08] bg-surface/60 backdrop-blur-xl p-6 border-t-2 border-t-accent">
         <p class="font-mono text-caption text-accent">day 7 or 10</p>
         <h3 class="text-title-3 mt-2">Report &amp; handoff</h3>
         <p class="prose-p-sm mt-stack">Branded PDF report with a written executive summary and discussion, Excel workbook with full statistical results, figures at 300 dpi, and the pipeline code. Raw data is deleted within 30 days of delivery.</p>

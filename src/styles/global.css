@@ -58,6 +58,56 @@ body::before {
   color: transparent;
 }
 
+/* Spotlight card: a soft teal light and a lit edge follow the pointer
+   (coordinates set in motion.ts). Feedback starts on hover and deepens on
+   press, Apple style: instant response, eased fade, small lift. */
+.glow-card {
+  position: relative;
+  isolation: isolate;
+  --mx: 50%;
+  --my: 50%;
+  --glow: 0;
+  transition: transform 300ms cubic-bezier(0.25, 0.1, 0.25, 1),
+              box-shadow 300ms cubic-bezier(0.25, 0.1, 0.25, 1),
+              border-color 300ms ease, background-color 300ms ease;
+}
+.glow-card::before,
+.glow-card::after {
+  content: '';
+  position: absolute;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: var(--glow);
+  transition: opacity 300ms ease;
+}
+.glow-card::before {
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(440px circle at var(--mx) var(--my), rgba(45, 212, 191, 0.18), transparent 50%);
+}
+.glow-card::after {
+  inset: -1px;
+  padding: 1px;
+  background: radial-gradient(280px circle at var(--mx) var(--my), rgba(94, 234, 212, 0.95), rgba(125, 211, 252, 0.35) 40%, transparent 70%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+}
+.glow-card:hover {
+  --glow: 1;
+  transform: translateY(-4px);
+  box-shadow: 0 28px 60px -28px rgba(45, 212, 191, 0.45);
+}
+.glow-card:active {
+  transform: translateY(-2px) scale(0.985);
+  transition-duration: 100ms;
+}
+.glow-card h3 { transition: color 300ms ease; }
+.glow-card:hover h3 { color: #ffffff; }
+.glow-card .glow-num { transition: color 300ms ease, text-shadow 300ms ease; }
+.glow-card:hover .glow-num { color: #99f6e4; text-shadow: 0 0 18px rgba(45, 212, 191, 0.8); }
+
 @layer components {
   /* ── Type roles ──────────────────────────────────────────────────── */
 
