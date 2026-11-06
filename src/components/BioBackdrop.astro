@@ -1,0 +1,220 @@
+---
+/**
+ * Fixed full-page canvas behind every page: bioinformatics code and
+ * nucleotide streams falling, plus a DNA double helix that turns and
+ * flows down as the visitor scrolls.
+ *
+ * intensity: 'full' on the home page, 'subtle' on reading pages.
+ * Reduced motion: one static frame, no loop.
+ */
+interface Props {
+  intensity?: 'full' | 'subtle';
+}
+const { intensity = 'subtle' } = Astro.props;
+---
+<canvas id="bio-backdrop" data-intensity={intensity} aria-hidden="true"></canvas>
+
+<style>
+  #bio-backdrop {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -1;
+    pointer-events: none;
+  }
+</style>
+
+<script>
+  const canvas = document.getElementById('bio-backdrop') as HTMLCanvasElement | null;
+  const ctx = canvas?.getContext('2d');
+
+  if (canvas && ctx) {
+    const full = canvas.dataset.intensity === 'full';
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // Real lines from the pipelines we run: the backdrop is our own work.
+    const CODE = [
+      'snakemake --cores 8 --use-conda',
+      'dds <- DESeq(dds)',
+      'res <- results(dds, alpha = 0.05)',
+      'subset(res, padj < 0.05 & abs(log2FoldChange) > 1)',
+      'sc.pp.neighbors(adata, n_pcs = 30)',
+      'sc.tl.leiden(adata, resolution = 0.6)',
+      'macs3 callpeak -t chip.bam -c input.bam -g hs',
+      'STAR --runThreadN 8 --quantMode GeneCounts',
+      'featureCounts -p -a gencode.v44.gtf -o counts.txt',
+      'bismark --genome GRCh38 -1 R1.fq.gz -2 R2.fq.gz',
+      'fastp -i R1.fq.gz -I R2.fq.gz --thread 1',
+      'samtools sort -@ 8 -o sorted.bam',
+      'fit <- eBayes(lmFit(y, design))',
+      'MOFAobject <- run_mofa(model)',
+      'dc.run_ulm(mat, net = dorothea)',
+      'enrichGO(genes, OrgDb = org.Hs.eg.db, ont = "BP")',
+      'ChIPseeker::annotatePeak(peaks, TxDb = txdb)',
+      '>chr17:7668402-7687550 TP53',
+      '@SRR2584863.1 1:N:0:ATCACG',
+      'gseaplot2(gsea, geneSetID = "HALLMARK_E2F_TARGETS")',
+      'limma::removeBatchEffect(vsd, batch = meta$batch)',
+      'decoupleR::run_mlm(mat, net, .source = "source")',
+    ];
+    const BASES = 'ACGT';
+    const BASE_COLOR: Record<string, string> = {
+      A: '45,212,191', T: '94,234,212', G: '125,211,252', C: '167,139,250',
+    };
+
+    let W = 0, H = 0, dpr = 1;
+    type Line = { x: number; y: number; text: string; speed: number; alpha: number; size: number; hot: boolean };
+    type Stream = { x: number; y: number; speed: number; len: number; seq: string };
+    let lines: Line[] = [];
+    let streams: Stream[] = [];
+
+    const rand = (a: number, b: number) => a + Math.random() * (b - a);
+    const randSeq = (n: number) => Array.from({ length: n }, () => BASES[(Math.random() * 4) | 0]).join('');
+
+    function makeLine(y?: number): Line {
+      const size = W < 640 ? rand(10, 12) : rand(11, 14);
+      return {
+        x: rand(-40, W - 120),
+        y: y ?? rand(-H, 0),
+        text: CODE[(Math.random() * CODE.length) | 0],
+        speed: rand(10, 28),
+        alpha: rand(0.08, 0.2),
+        size,
+        hot: Math.random() < 0.12,
+      };
+    }
+    function makeStream(y?: number): Stream {
+      return { x: rand(0, W), y: y ?? rand(-H, 0), speed: rand(30, 70), len: (rand(8, 22)) | 0, seq: randSeq(30) };
+    }
+
+    function resize() {
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      W = window.innerWidth; H = window.innerHeight;
+      canvas!.width = W * dpr; canvas!.height = H * dpr;
+      ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
+      const density = full ? 1 : 0.55;
+      const nLines = Math.round((W < 640 ? 14 : 26) * density);
+      const nStreams = Math.round((W < 640 ? 6 : 14) * density);
+      lines = Array.from({ length: nLines }, () => makeLine(rand(-40, H)));
+      streams = Array.from({ length: nStreams }, () => makeStream(rand(-H, H)));
+    }
+
+    let lastScroll = window.scrollY;
+    let scrollVel = 0; // px per frame, smoothed
+
+    function drawCode(dt: number) {
+      const boost = 1 + Math.min(Math.abs(scrollVel) * 0.12, 6);
+      const mult = full ? 1 : 0.6;
+      ctx!.textBaseline = 'top';
+      for (const l of lines) {
+        l.y += l.speed * dt * boost;
+        if (l.y > H + 20) Object.assign(l, makeLine(-20));
+        ctx!.font = `${l.size}px "JetBrains Mono", ui-monospace, monospace`;
+        ctx!.fillStyle = l.hot
+          ? `rgba(45,212,191,${l.alpha * 1.6 * mult})`
+          : `rgba(164,176,189,${l.alpha * mult})`;
+        ctx!.fillText(l.text, l.x, l.y);
+      }
+      ctx!.font = `12px "JetBrains Mono", ui-monospace, monospace`;
+      for (const s of streams) {
+        s.y += s.speed * dt * boost;
+        if (s.y - s.len * 14 > H) Object.assign(s, makeStream(-20));
+        for (let i = 0; i < s.len; i++) {
+          const ch = s.seq[i % s.seq.length];
+          const a = (1 - i / s.len) * 0.35 * mult;
+          ctx!.fillStyle = `rgba(${BASE_COLOR[ch]},${a})`;
+          ctx!.fillText(ch, s.x, s.y - i * 14);
+        }
+        if (Math.random() < 0.04) s.seq = s.seq.slice(1) + BASES[(Math.random() * 4) | 0];
+      }
+    }
+
+    function drawHelix(t: number) {
+      const scrollY = window.scrollY;
+      const mobile = W < 768;
+      const heroFade = (full ? Math.max(0.3, 1 - scrollY / (H * 1.4)) : 0.2) * (mobile ? 0.45 : 1);
+      const cx = mobile ? W * 0.62 : W * 0.8;
+      const amp = mobile ? Math.min(W * 0.22, 90) : Math.min(W * 0.075, 120);
+      const k = (Math.PI * 2) / (mobile ? 260 : 340); // one full turn every ~340 px
+      // spin with time, and the scroll drives both rotation and a downward flow
+      const phase0 = t * 0.0006 + scrollY * 0.004;
+      const flow = scrollY * 0.35 + t * 0.02;
+      const rung = 18;                                  // px between base pairs
+
+      const xAt = (y: number, strand: 0 | 1) =>
+        cx + Math.sin((y - flow) * k + phase0 + strand * Math.PI) * amp;
+      const zAt = (y: number, strand: 0 | 1) =>
+        Math.cos((y - flow) * k + phase0 + strand * Math.PI); // +1 = towards viewer
+
+      // 1. base pairs (behind both strands)
+      const first = Math.floor((-rung - flow) / rung) * rung + flow;
+      for (let y = first; y < H + rung; y += rung) {
+        const idx = Math.round((y - flow) / rung);
+        const ch = BASES[((idx % 4) + 4) % 4 ^ (Math.abs(idx * 7) % 3 === 0 ? 1 : 0)];
+        const pair = ({ A: 'T', T: 'A', G: 'C', C: 'G' } as Record<string, string>)[ch];
+        const x0 = xAt(y, 0), x1 = xAt(y, 1);
+        const xm = (x0 + x1) / 2;
+        const depth = 0.35 + 0.65 * Math.abs(Math.sin((y - flow) * k + phase0)); // rungs facing us look wider
+        const a = heroFade * 0.45 * depth;
+        ctx!.lineWidth = 2;
+        ctx!.strokeStyle = `rgba(${BASE_COLOR[ch]},${a})`;
+        ctx!.beginPath(); ctx!.moveTo(x0, y); ctx!.lineTo(xm, y); ctx!.stroke();
+        ctx!.strokeStyle = `rgba(${BASE_COLOR[pair]},${a})`;
+        ctx!.beginPath(); ctx!.moveTo(xm, y); ctx!.lineTo(x1, y); ctx!.stroke();
+      }
+
+      // 2. backbones: drawn in short segments so the back half is dimmer and thinner
+      const seg = 4;
+      for (const strand of [0, 1] as const) {
+        const rgb = strand === 0 ? '45,212,191' : '125,211,252';
+        for (let y = -seg; y < H + seg; y += seg) {
+          const z = zAt(y, strand);
+          const f = (z + 1) / 2;
+          ctx!.lineWidth = 1.2 + 3.2 * f;
+          ctx!.strokeStyle = `rgba(${rgb},${heroFade * (0.18 + 0.82 * f)})`;
+          ctx!.beginPath(); ctx!.moveTo(xAt(y, strand), y); ctx!.lineTo(xAt(y + seg, strand), y + seg); ctx!.stroke();
+        }
+      }
+
+      // 3. glow on the front-facing backbone nodes
+      for (let y = first; y < H + rung; y += rung) {
+        for (const strand of [0, 1] as const) {
+          const z = zAt(y, strand);
+          if (z < 0.2) continue;
+          const r = 2 + 2.5 * z;
+          ctx!.fillStyle = `rgba(236,254,250,${heroFade * 0.55 * z})`;
+          ctx!.beginPath(); ctx!.arc(xAt(y, strand), y, r, 0, Math.PI * 2); ctx!.fill();
+        }
+      }
+    }
+
+    let last = performance.now();
+    let running = true;
+    function frame(now: number) {
+      if (!running) return;
+      const dt = Math.min((now - last) / 1000, 0.05);
+      last = now;
+      const sy = window.scrollY;
+      scrollVel = scrollVel * 0.85 + (sy - lastScroll) * 0.15;
+      lastScroll = sy;
+      ctx!.clearRect(0, 0, W, H);
+      drawCode(dt);
+      drawHelix(now);
+      requestAnimationFrame(frame);
+    }
+
+    resize();
+    window.addEventListener('resize', resize);
+
+    if (reduce) {
+      drawCode(0); drawHelix(0);
+    } else {
+      requestAnimationFrame(frame);
+      document.addEventListener('visibilitychange', () => {
+        running = !document.hidden;
+        if (running) { last = performance.now(); requestAnimationFrame(frame); }
+      });
+    }
+  }
+</script>

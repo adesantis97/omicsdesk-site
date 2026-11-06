@@ -12,7 +12,7 @@ const links = [
 <nav class="sticky top-0 z-40 bg-paper/80 backdrop-blur-md border-b border-slate-200/60">
   <div class="max-w-5xl mx-auto px-5 py-3 flex items-center justify-between gap-3">
     <a href="/" class="flex items-center shrink-0" aria-label="OmicsDesk home">
-      <img src="/logo.png" alt="OmicsDesk" width="1129" height="300" class="h-7 sm:h-8 w-auto" />
+      <img src="/logo_white.png" alt="OmicsDesk" width="1129" height="300" class="h-7 sm:h-8 w-auto" />
     </a>
 
     <div class="hidden md:flex items-center gap-6 text-body-sm text-slate-600">
@@ -25,7 +25,7 @@ const links = [
       <a href="https://www.linkedin.com/company/omicsdesk" target="_blank" rel="noopener" aria-label="OmicsDesk on LinkedIn" class="hidden sm:inline-flex items-center justify-center w-11 h-11 rounded-pill text-slate-600 transition duration-250 ease-apple hover:text-ink hover:bg-slate-100">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.36V9h3.41v1.56h.05c.47-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.72v20.56C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.72V1.72C24 .77 23.2 0 22.22 0z"/></svg>
       </a>
-      <a href="mailto:hello@omicsdesk.com?subject=OmicsDesk%20%E2%80%94%20request%20a%20quote" class="hidden sm:inline-flex btn-compact bg-ink text-white hover:bg-slate-800">
+      <a href="mailto:hello@omicsdesk.com?subject=OmicsDesk%20%E2%80%94%20request%20a%20quote" class="hidden sm:inline-flex btn-compact bg-ink text-paper hover:bg-slate-800">
         Request a quote
       </a>
 
@@ -43,7 +43,7 @@ const links = [
     </div>
   </div>
 
-  <div id="mobile-menu" class="hidden md:hidden border-t border-slate-100 bg-white">
+  <div id="mobile-menu" class="hidden md:hidden border-t border-slate-100 bg-surface">
     <div class="max-w-5xl mx-auto px-5 py-3 flex flex-col text-base">
       {links.map((l) => (
         <a href={l.href} class={`py-3 min-h-[44px] flex items-center border-b border-slate-100 last:border-b-0 transition duration-250 ease-apple ${l.active ? 'text-ink font-medium' : 'text-slate-700'} hover:text-ink`}>{l.label}</a>

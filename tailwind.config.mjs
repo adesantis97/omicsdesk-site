@@ -76,20 +76,39 @@ export default {
         250: '250ms',
       },
 
+      // ── Dark theme (redesign 2026-11) ───────────────────────────────
+      // The site was written in light-theme class names (text-ink,
+      // text-slate-600, bg-paper...). Instead of rewriting every page, the
+      // palette itself is flipped: ink is now the light text colour, paper
+      // the near-black ground, and the slate scale is inverted so that
+      // slate-600 (secondary text) stays readable and slate-50/100 become
+      // dark raised surfaces.
       colors: {
-        ink: '#0f172a',
-        accent: '#0d9488',
-        'accent-dark': '#0f766e',
-        // Warm off-white page surfaces (never pure white)
-        paper: '#f8f8f5',
-        'paper-2': '#f1f3f1',
-        // Teal-tinted band + deep feature band
-        'tint': '#eaf3f0',
-        'tint-2': '#dcece7',
+        ink: '#eef3f6',
+        accent: '#2dd4bf',
+        'accent-dark': '#5eead4',
+        paper: '#05080c',
+        'paper-2': '#0a0f15',
+        surface: '#0e141c',
+        tint: '#071512',
+        'tint-2': '#123029',
+        slate: {
+          50: '#0c121a',
+          100: '#131b25',
+          200: '#1e2834',
+          300: '#2b3745',
+          400: '#5c6979',
+          500: '#8794a3',
+          600: '#a4b0bd',
+          700: '#c4cdd7',
+          800: '#dde3ea',
+          900: '#eef2f6',
+          950: '#f8fafc',
+        },
       },
       boxShadow: {
-        card: '0 1px 2px rgba(15,23,42,0.04), 0 8px 24px -12px rgba(15,23,42,0.10)',
-        'card-hover': '0 2px 4px rgba(15,23,42,0.06), 0 18px 40px -16px rgba(13,148,136,0.28)',
+        card: '0 1px 0 rgba(255,255,255,0.04) inset, 0 12px 32px -16px rgba(0,0,0,0.7)',
+        'card-hover': '0 1px 0 rgba(255,255,255,0.06) inset, 0 18px 44px -16px rgba(45,212,191,0.30)',
       },
       typography: ({ theme }) => ({
         DEFAULT: {

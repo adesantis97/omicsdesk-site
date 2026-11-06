@@ -6,6 +6,8 @@
 
 html {
   scroll-behavior: smooth;
+  color-scheme: dark;
+  background: #05080c;
 }
 
 body {
@@ -22,8 +24,8 @@ body::before {
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(60% 100% at 78% -8%, rgba(13, 148, 136, 0.14), transparent 60%),
-    radial-gradient(52% 90% at 8% -12%, rgba(15, 118, 110, 0.10), transparent 62%);
+    radial-gradient(60% 100% at 78% -8%, rgba(45, 212, 191, 0.10), transparent 60%),
+    radial-gradient(52% 90% at 8% -12%, rgba(15, 118, 110, 0.12), transparent 62%);
 }
 
 /* Respect the OS "reduce motion" setting: every hover lift, scale and
@@ -37,6 +39,74 @@ body::before {
     transform: none !important;
   }
 }
+
+/* Scroll-scrubbed statement: words start dim and light up (motion.ts). */
+.scrub-word { opacity: 0.16; }
+.reduce-motion .scrub-word { opacity: 1; }
+
+/* Hairline grid that sits over the backdrop on the home hero. */
+.hero-vignette {
+  background:
+    radial-gradient(70% 60% at 30% 50%, rgba(5, 8, 12, 0.85), transparent 75%),
+    linear-gradient(180deg, transparent 70%, #05080c 100%);
+}
+
+.text-gradient {
+  background: linear-gradient(100deg, #5eead4 0%, #7dd3fc 55%, #a78bfa 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Spotlight card: a soft teal light and a lit edge follow the pointer
+   (coordinates set in motion.ts). Feedback starts on hover and deepens on
+   press, Apple style: instant response, eased fade, small lift. */
+.glow-card {
+  position: relative;
+  isolation: isolate;
+  --mx: 50%;
+  --my: 50%;
+  --glow: 0;
+  transition: transform 300ms cubic-bezier(0.25, 0.1, 0.25, 1),
+              box-shadow 300ms cubic-bezier(0.25, 0.1, 0.25, 1),
+              border-color 300ms ease, background-color 300ms ease;
+}
+.glow-card::before,
+.glow-card::after {
+  content: '';
+  position: absolute;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: var(--glow);
+  transition: opacity 300ms ease;
+}
+.glow-card::before {
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(440px circle at var(--mx) var(--my), rgba(45, 212, 191, 0.18), transparent 50%);
+}
+.glow-card::after {
+  inset: -1px;
+  padding: 1px;
+  background: radial-gradient(280px circle at var(--mx) var(--my), rgba(94, 234, 212, 0.95), rgba(125, 211, 252, 0.35) 40%, transparent 70%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+}
+.glow-card:hover {
+  --glow: 1;
+  transform: translateY(-4px);
+  box-shadow: 0 28px 60px -28px rgba(45, 212, 191, 0.45);
+}
+.glow-card:active {
+  transform: translateY(-2px) scale(0.985);
+  transition-duration: 100ms;
+}
+.glow-card h3 { transition: color 300ms ease; }
+.glow-card:hover h3 { color: #ffffff; }
+.glow-card .glow-num { transition: color 300ms ease, text-shadow 300ms ease; }
+.glow-card:hover .glow-num { color: #99f6e4; text-shadow: 0 0 18px rgba(45, 212, 191, 0.8); }
 
 @layer components {
   /* ── Type roles ──────────────────────────────────────────────────── */
@@ -86,7 +156,7 @@ body::before {
 
   /* White panel that lifts off the warm page. */
   .card {
-    @apply bg-white rounded-card border border-slate-200/80 shadow-card transition duration-250 ease-apple;
+    @apply bg-surface rounded-card border border-slate-200/80 shadow-card transition duration-250 ease-apple;
   }
   .card-link {
     @apply card hover:shadow-card-hover hover:border-accent/40 hover:-translate-y-0.5;
@@ -96,16 +166,16 @@ body::before {
      actually something behind to blur. On the flat paper ground a blur costs
      GPU and shows nothing, so plain .card is used there. */
   .card-glass {
-    @apply rounded-card border border-white/60 bg-white/70 backdrop-blur-xl shadow-card transition duration-250 ease-apple;
+    @apply rounded-card border border-white/[0.08] bg-surface/60 backdrop-blur-xl shadow-card transition duration-250 ease-apple;
   }
   .card-glass-invert {
-    @apply rounded-card border border-white/15 bg-white/[0.08] backdrop-blur-xl transition duration-250 ease-apple hover:bg-white/[0.14];
+    @apply rounded-card border border-white/15 bg-white/[0.06] backdrop-blur-xl transition duration-250 ease-apple hover:bg-white/[0.10];
   }
 
   /* Light teal-tinted section band */
   .section-tint {
     @apply relative border-y border-tint-2/70;
-    background: linear-gradient(180deg, #f4faf8 0%, #eaf3f0 100%);
+    background: linear-gradient(180deg, rgba(7,21,18,0.55) 0%, rgba(10,30,26,0.75) 100%);
   }
 
   /* Deep teal → ink full-bleed feature band */
@@ -113,7 +183,7 @@ body::before {
     @apply relative text-white;
     background:
       radial-gradient(80% 120% at 85% 0%, rgba(20, 184, 166, 0.35), transparent 55%),
-      linear-gradient(155deg, #0f766e 0%, #115e59 42%, #0f172a 100%);
+      linear-gradient(155deg, #0b3f3a 0%, #082a27 45%, #05080c 100%);
   }
 
   /* ── Controls ────────────────────────────────────────────────────── */
@@ -125,10 +195,10 @@ body::before {
            font-medium text-body-sm transition duration-250 ease-apple hover:scale-[1.02];
   }
   .btn-primary {
-    @apply btn bg-ink text-white shadow-card hover:bg-slate-800;
+    @apply btn bg-ink text-paper shadow-card hover:bg-slate-800;
   }
   .btn-secondary {
-    @apply btn bg-white text-ink border border-slate-200 shadow-card hover:bg-slate-50;
+    @apply btn bg-surface text-ink border border-slate-200 shadow-card hover:bg-slate-50;
   }
   .btn-outline {
     @apply btn bg-transparent text-ink border border-slate-300 hover:bg-slate-100;
@@ -155,7 +225,7 @@ body::before {
 
   /* Pill chip / tag */
   .chip {
-    @apply inline-flex items-center rounded-pill border border-slate-200 bg-white/70 px-3 py-1 text-caption font-medium text-slate-600;
+    @apply inline-flex items-center rounded-pill border border-slate-200 bg-surface/70 px-3 py-1 text-caption font-medium text-slate-600;
   }
 
   /* ── Progressive disclosure ──────────────────────────────────────── */
