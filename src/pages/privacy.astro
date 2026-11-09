@@ -10,7 +10,7 @@ const controller = {
   email: 'hello@omicsdesk.com',
 };
 
-const lastUpdated = '25 July 2026';
+const lastUpdated = '9 November 2026';
 
 const storage = [
   {
@@ -166,6 +166,33 @@ const storage = [
         <button type="button" data-consent-open class="text-accent font-medium underline underline-offset-2">cookie preferences</button>,
         also linked in the footer of every page. You can additionally block or delete storage
         through your browser settings, without breaking the site.
+      </p>
+    </div>
+
+    <div id="youtube">
+      <h2 class="text-title-3">desks.bio on YouTube: the desks.bio uploader</h2>
+      <p class="mt-stack prose-p">
+        desks.bio uploader is the internal tool we use to publish our own videos on our own YouTube
+        channel, DesksBio. It uses YouTube API Services and only ever acts on our channel. It is not
+        offered to other people and nobody else can sign in to it.
+      </p>
+      <p class="mt-stack prose-p">
+        It uploads our videos and thumbnails, adds them to our playlists, reads the comments left
+        under our videos and replies to them, and reads our own channel statistics (views, watch
+        time, subscribers) to plan the next week. If you comment on one of our videos, the tool reads
+        your public display name and comment text to reply. We keep a short log of the comments we
+        answered and of papers people ask us to explain, for up to 12 months. This data is never sold,
+        never used for advertising and never shared with anyone.
+      </p>
+      <p class="mt-stack prose-p">
+        By interacting with our YouTube channel you are also subject to the
+        <a href="https://www.youtube.com/t/terms" target="_blank" rel="noopener" class="text-accent font-medium underline underline-offset-2">YouTube Terms of Service</a>
+        and the
+        <a href="https://policies.google.com/privacy" target="_blank" rel="noopener" class="text-accent font-medium underline underline-offset-2">Google Privacy Policy</a>.
+        You can revoke the access of any app to your Google data at
+        <a href="https://security.google.com/settings/security/permissions" target="_blank" rel="noopener" class="text-accent font-medium underline underline-offset-2">Google security settings</a>.
+        To ask us to delete a comment log entry about you, write to
+        <a href={`mailto:${controller.email}`} class="text-accent font-medium underline underline-offset-2">{controller.email}</a>.
       </p>
     </div>
 
