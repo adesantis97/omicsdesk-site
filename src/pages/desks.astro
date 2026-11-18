@@ -1,0 +1,180 @@
+---
+import Base from '../layouts/Base.astro';
+
+/*
+  omicsdesk.com/desks — the single landing page for everything desks.bio
+  publishes (Instagram, YouTube, LinkedIn, Bluesky, the free skills).
+  Decided in DesksBio/STRATEGIA.md, 2026-11-17, Regia card c20261117-st02:
+  three exits and one email field, no new domain.
+
+  The mailing list runs on Brevo with double opt-in. The form posts straight to
+  the Brevo-hosted endpoint, so the API key never reaches the browser: set the
+  endpoint once in PUBLIC_BREVO_FORM_ACTION (Brevo > Contacts > Forms > share
+  URL). Until it is set the block falls back to a plain mailto, so the page
+  never shows a dead field.
+*/
+const brevoAction = import.meta.env.PUBLIC_BREVO_FORM_ACTION ?? '';
+
+const exits = [
+  {
+    key: 'skills',
+    eyebrow: 'Free, MIT',
+    name: 'The bench skills for Claude',
+    body:
+      'Count a colony formation assay or a Transwell from your own photos, inside the Claude app. ' +
+      'Every field is read at the same threshold, and you see what it counted over your own image before you keep the number.',
+    cta: 'Get the skills',
+    href: 'https://github.com/adesantis97/desks',
+    external: true,
+    note: 'colony-count and invasion-count, in the bench-assays plugin.',
+  },
+  {
+    key: 'labsdesk',
+    eyebrow: 'Coming soon',
+    name: 'LabsDesk, early access',
+    body:
+      'The protocol app we are building at the bench: you open a run and it already lists what that run needs, ' +
+      'straight out of the steps, with the volumes. It is not out yet, and we are showing it while we build it.',
+    cta: 'Ask for early access',
+    href: '#list',
+    external: false,
+    note: 'Invitations go out in blocks of ten, oldest first.',
+  },
+  {
+    key: 'omicsdesk',
+    eyebrow: 'Out today',
+    name: 'OmicsDesk',
+    body:
+      'RNA-seq, single-cell, ChIP/ATAC-seq, proteomics and methylation read by a bioinformatician who knows the biology: ' +
+      'from the raw reads to the figure for the paper, with the limits written down.',
+    cta: 'See how it works',
+    href: '/pricing',
+    external: false,
+    note: 'Starts with a second opinion on results you already have.',
+  },
+];
+---
+<Base
+  title="desks.bio — one paper a week, read from the figures"
+  description="The free Claude skills for the bench, early access to LabsDesk, and OmicsDesk. Plus one email a week: one paper, read from the figures."
+>
+  <header class="max-w-5xl mx-auto px-5 pt-section-sm sm:pt-section pb-block">
+    <p class="eyebrow mb-stack">desks.bio</p>
+    <h1 class="text-title-2 sm:text-title-1 lg:text-display-sm">
+      One paper a week, read from the figures
+    </h1>
+    <p class="mt-stack text-lead text-slate-600 max-w-measure">
+      The abstract tells you what they found, not what they did. Once a week we take one paper, one bench rule
+      or one free tool and read it the way a biologist needs it: from the figures up, with the limits said out loud.
+      Three things you can take with you from here.
+    </p>
+  </header>
+
+  <section class="max-w-5xl mx-auto px-5 pb-block grid md:grid-cols-3 gap-6">
+    {exits.map((e) => (
+      <article id={e.key} class="card p-6 flex flex-col">
+        <p class="eyebrow mb-stack">{e.eyebrow}</p>
+        <h2 class="text-title-3">{e.name}</h2>
+        <p class="prose-p-sm mt-2 flex-grow">{e.body}</p>
+        <a
+          href={e.href}
+          class="btn-primary mt-block w-full"
+          data-exit={e.key}
+          {...(e.external ? { target: '_blank', rel: 'noopener' } : {})}
+        >
+          {e.cta}
+        </a>
+        <p class="text-caption text-slate-500 mt-stack">{e.note}</p>
+      </article>
+    ))}
+  </section>
+
+  <section id="list" class="section-wrap">
+    <div class="card p-6 sm:p-8 max-w-measure">
+      <p class="eyebrow mb-stack">The list</p>
+      <h2 class="text-title-2">One paper a week</h2>
+      <p class="prose-p mt-stack">
+        One email, one paper, read from the figures, plus whatever free tool is worth your time that week.
+        No digest, no promotion. It is also where LabsDesk invitations go out.
+      </p>
+
+      {brevoAction ? (
+        <form
+          id="list-form"
+          action={brevoAction}
+          method="POST"
+          class="mt-block flex flex-col sm:flex-row gap-3"
+        >
+          <label class="sr-only" for="EMAIL">Your email</label>
+          <input
+            type="email"
+            id="EMAIL"
+            name="EMAIL"
+            required
+            autocomplete="email"
+            placeholder="you@university.edu"
+            class="flex-grow rounded-pill border border-slate-300 bg-surface px-5 py-3 min-h-[44px] text-body-sm text-ink
+                   placeholder:text-slate-400 focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/30"
+          />
+          <input type="hidden" id="PIECE" name="PIECE" value="" />
+          <input type="hidden" id="SOURCE" name="SOURCE" value="" />
+          <input type="hidden" name="LANDING" value="desks" />
+          <button type="submit" class="btn-primary shrink-0">Send me the paper</button>
+        </form>
+      ) : (
+        <div class="mt-block">
+          <a
+            id="list-mailto"
+            href="mailto:hello@omicsdesk.com?subject=One%20paper%20a%20week&body=Add%20me%20to%20the%20list."
+            class="btn-primary"
+          >
+            Email me the paper
+          </a>
+        </div>
+      )}
+
+      <p class="text-caption text-slate-500 mt-stack">
+        You confirm with a link in the first email, and one click gets you out. Nothing else is sent to you and
+        nothing is passed on: <a href="/privacy" class="link-more">privacy</a>.
+      </p>
+    </div>
+  </section>
+
+  <script is:inline>
+    /*
+      Every link that points here carries the piece and the channel (?p=031&s=ig).
+      Two jobs: put them in the form so the address arrives with its origin, and
+      carry them onto the three exits so a click can be traced back to the piece
+      that produced it. No cookie, no third party, nothing stored.
+    */
+    (function () {
+      var q = new URLSearchParams(window.location.search);
+      var piece = (q.get('p') || '').slice(0, 24).replace(/[^\w.-]/g, '');
+      var source = (q.get('s') || '').slice(0, 24).replace(/[^\w.-]/g, '');
+      if (!piece && !source) return;
+
+      var p = document.getElementById('PIECE');
+      var s = document.getElementById('SOURCE');
+      if (p) p.value = piece;
+      if (s) s.value = source;
+
+      var mailto = document.getElementById('list-mailto');
+      if (mailto) {
+        mailto.href = mailto.href + '%0A%0A(' + piece + '/' + source + ')';
+      }
+
+      document.querySelectorAll('a[data-exit]').forEach(function (a) {
+        var href = a.getAttribute('href');
+        if (!href || href.charAt(0) === '#') return;
+        try {
+          var url = new URL(href, window.location.origin);
+          if (piece) url.searchParams.set('p', piece);
+          if (source) url.searchParams.set('s', source);
+          a.setAttribute('href', url.toString());
+        } catch (err) {
+          /* a href we cannot parse is left exactly as it is */
+        }
+      });
+    })();
+  </script>
+</Base>

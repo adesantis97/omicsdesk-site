@@ -30,6 +30,12 @@ jobs:
 
       - name: Build Astro site
         run: npm run build
+        env:
+          # Brevo-hosted form endpoint for /desks (Contacts > Forms > share URL).
+          # Set it as a repo variable: Settings > Secrets and variables > Actions
+          # > Variables > PUBLIC_BREVO_FORM_ACTION. Empty is fine: the page then
+          # shows a mailto instead of the field, never a dead form.
+          PUBLIC_BREVO_FORM_ACTION: ${{ vars.PUBLIC_BREVO_FORM_ACTION }}
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
